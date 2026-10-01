@@ -1,0 +1,55 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build all 7 apps (production)
+        run: pnpm build
+        env:
+          # Absolute origins so remoteEntry/manifest URLs resolve cross-app
+          MF_ORIGIN_VUE: http://localhost:5173
+          MF_ORIGIN_REACT: http://localhost:5174
+          MF_ORIGIN_ANGULAR: http://localhost:5175
+          MF_ORIGIN_SVELTE: http://localhost:5176
+          MF_ORIGIN_SOLID: http://localhost:5177
+          MF_ORIGIN_PREACT: http://localhost:5178
+          MF_ORIGIN_LIT: http://localhost:5179
+
+      - name: Run e2e (boots all 7 preview servers itself)
+        run: pnpm test:e2e
+        env:
+          PLAYWRIGHT_PROD: "1"
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: e2e/playwright-report/
+          retention-days: 7

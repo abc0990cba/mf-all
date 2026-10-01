@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>MF Playground — Alpine Host</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <script>
+      // Resolve the theme before first paint: cookie/localStorage choice
+      // (shared across the seven dev-server origins), else OS preference.
+      // data-theme="dark" flips the token overrides in
+      // @mf-all/ui/tokens.css (see the file for resolution order).
+      (function () {
+        var t = null;
+        try {
+          var c = document.cookie.split("; ").find(function (x) {
+            return x.indexOf("mf-theme=") === 0;
+          });
+          if (c) t = c.split("=")[1];
+          if (t !== "dark" && t !== "light") t = localStorage.getItem("mf-theme");
+        } catch (e) {}
+        if (t === "dark" || (t !== "light" && matchMedia("(prefers-color-scheme: dark)").matches)) {
+          document.documentElement.dataset.theme = "dark";
+        }
+      })();
+    </script>
+    <div id="app" x-data="mfShell">
+      <div class="min-h-screen">
+        <header class="sticky top-0 z-10 border-b border-border bg-surface/85 backdrop-blur">
+          <div class="mx-auto flex max-w-6xl items-center gap-2.5 px-6 py-3">
+            <span class="shrink-0" x-html="logoSvg(self, 22)"></span>
+            <span class="text-sm font-semibold" x-text="selfLabel"></span>
+            <span
+              class="rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-accent-ink"
+              >host</span
+            >
+            <span class="hidden font-mono text-[11px] text-muted sm:inline" x-text="':' + selfPort"></span>
+            <nav class="ml-auto flex items-center gap-1 overflow-x-auto">
+              <template x-for="id in appIds" :key="id">
+                <a
+                  :href="pageUrl(id)"
+                  class="flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors hover:bg-accent-soft hover:text-ink"
+                  :class="id === self ? 'bg-accent-soft text-accent' : 'text-muted'"
+                >
+                  <span class="inline-block" x-html="logoSvg(id, 14)"></span>
+                  <span x-text="apps[id].label"></span>
+                </a>
+              </template>
+            </nav>
+            <button
+              type="button"
+              class="ml-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border bg-surface text-muted transition-colors hover:bg-accent-soft hover:text-ink"
+              :title="dark ? 'Switch to light theme' : 'Switch to dark theme'"
+              :aria-label="dark ? 'Switch to light theme' : 'Switch to dark theme'"
+              @click="onToggleTheme()"
+            >
+              <span class="inline-block" x-html="dark ? themeIcons.sun : themeIcons.moon"></span>
+            </button>
+          </div>
+        </header>
+
+        <main class="mx-auto max-w-6xl space-y-8 px-6 py-8">
+          <section>
+            <h1 class="text-2xl font-semibold tracking-tight">Module Federation Playground</h1>
+            <p class="mt-1 text-sm text-muted">
+              9 framework apps — every page hosts all 9 widgets as federated remotes. This page is
+              hosted by <b class="font-medium text-ink" x-text="selfLabel"></b
+              >, and <span x-text="selfLabel"></span> itself is a remote everywhere else.
+            </p>
+          </section>
+
+          <section
+            class="flex flex-wrap items-center justify-between gap-4 rounded-card border border-border bg-surface px-5 py-4 shadow-card"
+          >
+            <div>
+              <p class="text-sm font-semibold">Shared counter</p>
+              <p class="text-xs text-muted">
+                platform-memoized atom — one instance across all frameworks
+              </p>
+            </div>
+            <div class="flex items-center gap-5">
+              <div class="flex items-center gap-1.5 text-xs text-muted" x-show="last">
+                <span>last:</span>
+                <span class="inline-block" x-html="last ? logoSvg(last.app, 14) : ''"></span>
+                <span class="font-medium text-ink" x-text="last ? labelOf(last.app) : ''"></span>
+              </div>
+              <span class="font-mono text-3xl font-semibold tabular-nums" x-text="shared"></span>
+            </div>
+          </section>
+
+          <section class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            <template x-for="id in appIds" :key="id">
+              <article
+                class="flex min-h-[230px] flex-col overflow-hidden rounded-card border border-border bg-surface shadow-card"
+              >
+                <header class="flex items-center gap-2 border-b border-border px-4 py-2.5">
+                  <span class="inline-block shrink-0" x-html="logoSvg(id, 18)"></span>
+                  <span class="text-sm font-semibold" x-text="labelOf(id)"></span>
+                  <span
+                    class="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider"
+                    :style="`background-color: ${frameworks[id].color}1a; color: ${frameworks[id].color}`"
+                    x-text="apps[id].mfName"
+                  ></span>
+                  <span class="ml-auto flex items-center gap-2">
+                    <span class="font-mono text-[11px] text-muted" x-text="':' + apps[id].port"></span>
+                    <span
+                      class="h-1.5 w-1.5 rounded-full"
+                      :class="statusDot(id)"
+                    ></span>
+                  </span>
+                </header>
+
+                <div class="relative flex-1 p-4">
+                  <div x-show="state[id].status === 'loading'" class="animate-pulse space-y-3">
+                    <div class="h-8 w-28 rounded-lg bg-border/70"></div>
+                    <div class="h-4 w-44 rounded bg-border/50"></div>
+                    <div class="h-8 w-32 rounded-lg bg-border/70"></div>
+                    <div class="h-4 w-40 rounded bg-border/50"></div>
+                  </div>
+
+                  <template x-if="state[id].status === 'error'">
+                  <div class="flex h-full flex-col items-center justify-center gap-2 py-6 text-center">
+                    <p class="text-xs font-medium text-err">
+                      Couldn't load <span class="font-mono" x-text="apps[id].mfName + '/widget'"></span>
+                    </p>
+                    <p class="text-[11px] text-muted">
+                      Is the remote dev server on :<span x-text="apps[id].port"></span> running?
+                    </p>
+                    <p
+                      class="mt-1 max-h-16 max-w-full overflow-hidden rounded bg-bg px-2 py-1 font-mono text-[10px] text-muted"
+                      x-text="state[id].error"
+                      x-show="state[id].error"
+                    ></p>
+                    <button
+                      type="button"
+                      class="mt-1 inline-flex h-7 items-center rounded-lg border border-border px-3 text-xs font-medium transition-colors hover:bg-accent-soft"
+                      @click="retry(id)"
+                    >
+                      Retry
+                    </button>
+                  </div>
+                  </template>
+
+                  <div class="min-h-[120px]" :data-card-container="id"></div>
+                </div>
+              </article>
+            </template>
+          </section>
+
+          <section class="rounded-card border border-border bg-surface p-5 shadow-card">
+            <div class="mb-3 flex items-baseline justify-between">
+              <h2 class="text-sm font-semibold">Activity log</h2>
+              <p class="text-[11px] text-muted">CustomEvents dispatched by the widgets</p>
+            </div>
+            <p x-show="entries.length === 0" class="py-6 text-center text-xs text-muted">
+              No activity yet — click around inside the widgets.
+            </p>
+            <ul class="max-h-56 space-y-1.5 overflow-y-auto pr-1" x-show="entries.length > 0">
+              <template x-for="(entry, index) in entries" :key="entry.at + '-' + index">
+                <li class="flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs odd:bg-bg">
+                  <span class="inline-block shrink-0" x-html="logoSvg(entry.app, 14)"></span>
+                  <span class="font-semibold" x-text="labelOf(entry.app)"></span>
+                  <span class="truncate text-muted" x-text="entry.message"></span>
+                  <span
+                    class="ml-auto shrink-0 font-mono text-[11px] text-muted"
+                    x-text="new Date(entry.at).toLocaleTimeString()"
+                  ></span>
+                </li>
+              </template>
+            </ul>
+          </section>
+
+          <footer class="pb-4 text-center text-[11px] text-muted">
+            @module-federation/vite 1.23 · MF runtime 2.9 · 9 apps on ports 5173–5181 · every remote
+            is also a host
+          </footer>
+        </main>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

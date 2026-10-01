@@ -1,0 +1,34 @@
+/*
+ * Widget stylesheet — ships WITH the exposed module (imported in mount.ts).
+ *
+ * Granular Tailwind imports: theme + utilities only, NO preflight — the host
+ * page already provides exactly one reset. The `.mfw-*` classes (mf-widget
+ * prefix) are the shared widget vocabulary; every app defines the identical
+ * set, so widgets look the same on every page and can never collide with
+ * host styles.
+ */
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+@import "@mf-all/ui/tokens.css";
+
+@layer components {
+  .mfw-label {
+    @apply mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-muted;
+  }
+
+  .mfw-btn {
+    @apply inline-flex h-8 items-center rounded-lg border border-border bg-surface px-3 text-xs font-medium text-ink transition-colors hover:bg-accent-soft active:scale-[0.98];
+  }
+
+  .mfw-btn-accent {
+    @apply inline-flex h-8 items-center rounded-lg bg-accent px-3 text-xs font-medium text-accent-ink transition-colors hover:bg-accent/90 active:scale-[0.98];
+  }
+
+  .mfw-value {
+    @apply font-mono text-sm font-semibold tabular-nums;
+  }
+
+  .mfw-foot {
+    @apply text-[11px] text-muted;
+  }
+}

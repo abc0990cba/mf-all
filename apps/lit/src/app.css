@@ -1,0 +1,13 @@
+/* Host shell stylesheet — full Tailwind (theme + preflight + utilities).
+   This page owns the one and only preflight/reset; the Lit host components
+   render in LIGHT DOM (createRenderRoot → this) so these global styles apply.
+   The Lit *widget* keeps its shadow DOM and styles itself with the tokens. */
+@import "tailwindcss";
+@import "@mf-all/ui/tokens.css";
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}

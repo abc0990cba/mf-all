@@ -1,0 +1,13 @@
+{
+  "name": "@mf-all/e2e",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@mf-all/app-registry": "workspace:*",
+    "@playwright/test": "^1.63.0"
+  }
+}

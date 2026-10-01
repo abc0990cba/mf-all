@@ -1,0 +1,19 @@
+{
+  "name": "mf-all",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Module Federation 2.0 playground: 7 framework apps (Vue, React, Angular, Svelte, Solid, Preact, Lit), each hosting all 7 widgets",
+  "packageManager": "pnpm@11.22.0",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "dev": "concurrently -kn vue,react,angular,svelte,solid,preact,lit,alpine,jquery -c cyan,blue,red,orange,green,magenta,yellow,gray,brightBlue \"pnpm --filter @mf-all/app-vue dev\" \"pnpm --filter @mf-all/app-react dev\" \"pnpm --filter @mf-all/app-angular dev\" \"pnpm --filter @mf-all/app-svelte dev\" \"pnpm --filter @mf-all/app-solid dev\" \"pnpm --filter @mf-all/app-preact dev\" \"pnpm --filter @mf-all/app-lit dev\" \"pnpm --filter @mf-all/app-alpine dev\" \"pnpm --filter @mf-all/app-jquery dev\"",
+    "build": "pnpm -r --filter './apps/*' build",
+    "preview": "concurrently -kn vue,react,angular,svelte,solid,preact,lit,alpine,jquery -c cyan,blue,red,orange,green,magenta,yellow,gray,brightBlue \"pnpm --filter @mf-all/app-vue preview\" \"pnpm --filter @mf-all/app-react preview\" \"pnpm --filter @mf-all/app-angular preview\" \"pnpm --filter @mf-all/app-svelte preview\" \"pnpm --filter @mf-all/app-solid preview\" \"pnpm --filter @mf-all/app-preact preview\" \"pnpm --filter @mf-all/app-lit preview\" \"pnpm --filter @mf-all/app-alpine preview\" \"pnpm --filter @mf-all/app-jquery preview\"",
+    "test:e2e": "pnpm --filter @mf-all/e2e test"
+  },
+  "devDependencies": {
+    "concurrently": "catalog:"
+  }
+}

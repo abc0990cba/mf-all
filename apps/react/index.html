@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>MF Playground — React Host</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <script>
+      // Resolve the theme before first paint: cookie/localStorage choice
+      // (shared across the seven dev-server origins), else OS preference.
+      // data-theme="dark" flips the token overrides in
+      // @mf-all/ui/tokens.css (see the file for resolution order).
+      (function () {
+        var t = null;
+        try {
+          var c = document.cookie.split("; ").find(function (x) {
+            return x.indexOf("mf-theme=") === 0;
+          });
+          if (c) t = c.split("=")[1];
+          if (t !== "dark" && t !== "light") t = localStorage.getItem("mf-theme");
+        } catch (e) {}
+        if (t === "dark" || (t !== "light" && matchMedia("(prefers-color-scheme: dark)").matches)) {
+          document.documentElement.dataset.theme = "dark";
+        }
+      })();
+    </script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

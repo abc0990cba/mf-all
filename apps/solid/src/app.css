@@ -1,0 +1,12 @@
+/* Host shell stylesheet — full Tailwind (theme + preflight + utilities).
+   This page owns the one and only preflight/reset; widget exposes ship
+   their CSS without preflight (see src/widget/widget.css). */
+@import "tailwindcss";
+@import "@mf-all/ui/tokens.css";
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
