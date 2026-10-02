@@ -34,6 +34,9 @@ type CardStatus = "loading" | "ready" | "error";
         >
         <span class="ml-auto flex items-center gap-2">
           <span class="font-mono text-[11px] text-muted">:{{ cfg.port }}</span>
+          @if (loadMs(); as ms) {
+            <span class="font-mono text-[10px] text-muted" data-mf-loadtime>{{ ms }} ms</span>
+          }
           <span
             class="h-1.5 w-1.5 rounded-full"
             [class]="statusDotClass()"
@@ -87,6 +90,7 @@ export class WidgetCardComponent implements AfterViewInit {
     viewChild.required<ElementRef<HTMLDivElement>>("container");
 
   readonly status = signal<CardStatus>("loading");
+  readonly loadMs = signal<number | null>(null);
 
   private unmount: (() => void) | null = null;
   private loadId = 0;
@@ -134,6 +138,7 @@ export class WidgetCardComponent implements AfterViewInit {
 
     const cfg = APPS[this.app()];
     try {
+      const t0 = performance.now();
       const widget = await loadWidget(this.app());
       if (currentLoad !== this.loadId) return;
 
@@ -148,6 +153,7 @@ export class WidgetCardComponent implements AfterViewInit {
       } else {
         this.unmount = result;
       }
+      this.loadMs.set(Math.round(performance.now() - t0));
       this.status.set("ready");
       this.statusDotClass.set("bg-ok");
     } catch (error) {

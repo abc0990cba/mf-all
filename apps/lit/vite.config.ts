@@ -32,7 +32,13 @@ export default defineConfig(({ command }) => ({
     hmr: false,
   },
   preview: { port: SELF.port, strictPort: true },
-  base: process.env.MF_BUILD_ORIGIN ?? "/",
+  base:
+    process.env.MF_BUILD_ORIGIN ??
+    // Prod builds must reference this app's chunks ABSOLUTELY: every other
+    // page consumes them cross-origin (different port), and relative URLs
+    // would resolve against the consuming page's origin (404s). Real
+    // deployments override with MF_BUILD_ORIGIN (see README).
+    (command === "build" ? `http://localhost:${SELF.port}/` : "/"),
   build: { target: "chrome89" },
   plugins: [
     federation({

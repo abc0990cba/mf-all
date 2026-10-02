@@ -29,7 +29,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build all 7 apps (production)
+      - name: Build all 9 apps (production)
         run: pnpm build
         env:
           # Absolute origins so remoteEntry/manifest URLs resolve cross-app
@@ -40,8 +40,10 @@ jobs:
           MF_ORIGIN_SOLID: http://localhost:5177
           MF_ORIGIN_PREACT: http://localhost:5178
           MF_ORIGIN_LIT: http://localhost:5179
+          MF_ORIGIN_ALPINE: http://localhost:5180
+          MF_ORIGIN_JQUERY: http://localhost:5181
 
-      - name: Run e2e (boots all 7 preview servers itself)
+      - name: Run e2e (boots all 9 preview servers itself)
         run: pnpm test:e2e
         env:
           PLAYWRIGHT_PROD: "1"

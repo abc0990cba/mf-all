@@ -31,4 +31,100 @@
   .mfw-foot {
     @apply text-[11px] text-muted;
   }
+
+  /* --- tabs: the card stays minimalistic; features live behind switches --- */
+
+  .mfw-tabs {
+    @apply flex items-center gap-0.5;
+  }
+
+  .mfw-tab {
+    @apply relative inline-flex h-6 items-center rounded-md px-2 text-[10px] font-semibold uppercase tracking-wider text-muted transition-colors hover:text-ink;
+  }
+
+  .mfw-tab[aria-selected="true"] {
+    @apply bg-accent-soft text-ink;
+  }
+
+  .mfw-dot {
+    @apply absolute right-0 top-0 h-1.5 w-1.5 rounded-full bg-accent;
+  }
+
+  /* --- ball: the federated ball-shaped counter --- */
+
+  .mfw-ball {
+    @apply flex h-11 w-11 items-center justify-center rounded-full font-mono text-sm font-bold text-white shadow-md transition-transform hover:scale-105 active:scale-95;
+    background: radial-gradient(
+      circle at 30% 30%,
+      color-mix(in srgb, var(--color-accent, #4f46e5) 55%, white),
+      var(--color-accent, #4f46e5) 62%,
+      color-mix(in srgb, var(--color-accent, #4f46e5) 70%, black)
+    );
+  }
+
+  /* --- board: shared 5×5 pixel canvas --- */
+
+  .mfw-grid {
+    @apply grid w-fit grid-cols-5 gap-1;
+  }
+
+  .mfw-cell {
+    @apply h-3.5 w-3.5 rounded-[3px] border border-border bg-surface transition-colors;
+  }
+
+  .mfw-cell.is-on {
+    @apply border-accent bg-accent;
+  }
+
+  /* --- chat: one-line broadcast --- */
+
+  .mfw-chat-log {
+    @apply flex min-h-[52px] flex-col justify-end gap-1;
+  }
+
+  .mfw-chat-input {
+    @apply h-7 w-full min-w-0 flex-1 rounded-lg border border-border bg-surface px-2 text-xs text-ink placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent;
+  }
+
+  /* --- pulse: ping + mood --- */
+
+  .mfw-mood-btn {
+    @apply inline-flex h-7 w-8 items-center justify-center rounded-lg border border-border bg-surface text-sm transition-colors hover:bg-accent-soft active:scale-[0.98];
+  }
+
+  /* --- attribution: mini leaderboard under the shared counter --- */
+
+  .mfw-bars {
+    @apply flex items-end gap-1.5;
+  }
+
+  .mfw-bar-item {
+    @apply flex flex-col items-center gap-0.5;
+  }
+
+  .mfw-bar {
+    @apply w-2 rounded-t-sm bg-accent;
+    min-height: 2px;
+  }
+
+  .mfw-bar-logo {
+    @apply inline-block opacity-70 [&>svg]:h-2.5 [&>svg]:w-2.5;
+  }
+
+  /* --- flash: border glow when a ping arrives from another widget --- */
+
+  .mfw-flash {
+    animation: mfw-flash 0.6s ease-out;
+  }
+
+  @keyframes mfw-flash {
+    0% {
+      outline: 2px solid var(--color-accent, #4f46e5);
+      outline-offset: 3px;
+    }
+    100% {
+      outline: 2px solid transparent;
+      outline-offset: 3px;
+    }
+  }
 }

@@ -30,7 +30,7 @@ export function startShell(Alpine: typeof import("alpinejs").default): void {
     last: lastInteraction.get() as { app: string; at: number } | null,
     entries: [] as ActivityDetail[],
     state: Object.fromEntries(
-      APP_IDS.map((id) => [id, { status: "loading" as CardStatus, error: "" }]),
+      APP_IDS.map((id) => [id, { status: "loading" as CardStatus, error: "", loadMs: null as number | null }]),
     ),
     autoRetried: Object.fromEntries(APP_IDS.map((id) => [id, false])) as Record<string, boolean>,
     disposes: Object.fromEntries(
@@ -77,6 +77,7 @@ export function startShell(Alpine: typeof import("alpinejs").default): void {
       state.error = "";
 
       try {
+        const t0 = performance.now();
         const widget = await loadWidget(id as AppId);
         if (seq !== this.loadSeq[id]) return;
         const target = document.querySelector<HTMLElement>(`[data-card-container="${id}"]`);
@@ -93,6 +94,7 @@ export function startShell(Alpine: typeof import("alpinejs").default): void {
         } else {
           this.disposes[id] = result;
         }
+        state.loadMs = Math.round(performance.now() - t0);
         state.status = "ready";
       } catch (error) {
         if (seq !== this.loadSeq[id]) return;

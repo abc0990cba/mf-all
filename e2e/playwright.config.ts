@@ -1,7 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
 /**
- * E2E for the 7-way federation mesh. One webServer per app (Playwright
+ * E2E for the 9-way federation mesh. One webServer per app (Playwright
  * starts them in order; all servers must be up before tests run).
  *
  * PLAYWRIGHT_PROD=1 → serve the production builds (`vite preview`) instead
@@ -20,6 +20,8 @@ const MANAGERS = process.env.PLAYWRIGHT_SKIP_WEBSERVER
       ["solid", 5177],
       ["preact", 5178],
       ["lit", 5179],
+      ["alpine", 5180],
+      ["jquery", 5181],
     ] as const).map(([name, port]) => ({
       name: `${MODE}-${name}`,
       command: `pnpm --filter @mf-all/app-${name} ${MODE}`,

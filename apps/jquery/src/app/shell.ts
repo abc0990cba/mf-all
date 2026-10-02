@@ -31,6 +31,11 @@ const cardHtml = (id: string): string => {
         >${cfg.mfName}</span>
         <span class="ml-auto flex items-center gap-2">
           <span class="font-mono text-[11px] text-muted">:${cfg.port}</span>
+          <span
+            data-role="loadtime"
+            data-mf-loadtime
+            class="hidden font-mono text-[10px] text-muted"
+          ></span>
           <span data-role="dot" class="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-400"></span>
         </span>
       </header>
@@ -227,6 +232,7 @@ export function startShell(): void {
     setCardStatus(id, "loading");
 
     try {
+      const t0 = performance.now();
       const widget = await loadWidget(id);
       if (seq !== loadSeq[id]) return;
 
@@ -241,6 +247,10 @@ export function startShell(): void {
       } else {
         disposes[id] = result;
       }
+      $c
+        .find("[data-role='loadtime']")
+        .text(`${Math.round(performance.now() - t0)} ms`)
+        .removeClass("hidden");
       setCardStatus(id, "ready");
       settled[id] = true;
     } catch (error) {

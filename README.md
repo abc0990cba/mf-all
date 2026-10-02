@@ -29,15 +29,15 @@ counter, and a live activity log. Powered by
 
 ```bash
 pnpm install
-pnpm dev        # boots all 7 dev servers (5173–5179)
+pnpm dev        # boots all 9 dev servers (5173–5181)
 ```
 
 Open **http://localhost:5173** (or any of the nine). Also available:
 
 ```bash
-pnpm build      # production build of all 7 apps
+pnpm build      # production build of all 9 apps
 pnpm preview    # serve the production builds
-pnpm test:e2e   # Playwright suite (boots its own servers; 8 tests)
+pnpm test:e2e   # Playwright suite (boots its own servers)
 ```
 
 ## The apps
@@ -59,6 +59,36 @@ widget from a local import (a network hop to yourself buys nothing —
 self-consumption through the federation contract is fully supported too and
 was verified during development).
 
+## Inside every widget: five tabs, eight live demos
+
+To keep the 9-card grid minimalistic, each widget exposes its features
+through a tiny tab switcher. **Counters** is the default, so a page loads
+looking exactly like the classic demo; the rest is one click away. Every
+feature is implemented in all nine framework idioms and demonstrably syncs
+across frameworks (see `e2e/tests/features.spec.ts`):
+
+- **Counters** — the local counter, the shared counter, and a mini
+  leaderboard of micro-bars showing *which app* clicked "Shared +1" how
+  often (per-app attribution atom).
+- **Ball** — the federated ball: a ball-shaped pass-counter that lives in
+  exactly one widget on the page at a time. Click it and it teleports into
+  a random other framework's widget, its pass count grows, and the hop is
+  logged. One shared *entity with location and identity*, not just a number.
+- **Board** — a shared 5×5 pixel canvas; toggling a cell lights it in all
+  nine widgets (shared positional state).
+- **Chat** — a one-line broadcast; the last messages from any widget appear
+  in all of them (rendered strictly as text).
+- **Pulse** — "Ping ×8" broadcasts to every other widget (a `mf:ping`
+  CustomEvent — pure event bus, no shared store): they flash and count.
+  Plus a page-wide mood emoji, and an identity line proving location
+  independence: the host's own widget reads "running at home", federated
+  guests read "federated guest on :5173".
+
+Tabs show a small dot when unseen activity arrives while you're elsewhere,
+and a ping flash is always visible regardless of the active tab. Host cards
+additionally show how long each remote took to load and mount ("142 ms"
+beside the status dot) — the real cost of federation, live.
+
 ## How it fits together
 
 - **Widget contract** (`packages/widget-contract`) — every app exposes
@@ -72,11 +102,13 @@ was verified during development).
   names, ports and URLs. Remotes point at `mf-manifest.json` (`manifest:
   true` everywhere); override any origin per environment with
   `MF_ORIGIN_<APP>` at build time (e.g. `MF_ORIGIN_REACT=https://react.acme.com`).
-- **Shared state** (`packages/shared-store`) — a counter + last-interaction
-  atom whose instances are memoized on the platform global, so exactly one
-  store exists per page no matter how many copies of the module the
-  federation meshes load. Widgets also emit `CustomEvent("mf:activity")`
-  which the host pages aggregate into the activity log — cross-framework
+- **Shared state** (`packages/shared-store`) — atoms whose instances are
+  memoized on the platform global, so exactly one store exists per page no
+  matter how many copies of the module the federation meshes load: the
+  counter + last-interaction pair, plus the demo state (ball, chat, board,
+  mood, attribution). Widgets also emit `CustomEvent("mf:activity")` which
+  the host pages aggregate into the activity log, and `CustomEvent
+  ("mf:ping")` for widget-to-widget broadcasts — cross-framework
   communication without coupling.
 - **Design system** (`packages/ui`) — Tailwind v4 `@theme` tokens (one
   `tokens.css` imported by every app) + the framework logo kit. Tokens are
@@ -99,7 +131,9 @@ was verified during development).
 - Env-driven remote registry with stable expose keys; manifests (not entry
   files) as the deployment contract
 - `MF_BUILD_ORIGIN=<origin> pnpm build` → absolute asset URLs for
-  cross-origin chunk resolution
+  cross-origin chunk resolution (without it, builds default to each app's
+  own registry origin, so `pnpm build && pnpm preview` works out of the
+  box)
 - Retry plugin + error boundaries + watchdog (the three official resilience
   layers); widgets degrade independently
 - `deploy/nginx.conf` — the caching/CORS contract: `no-cache` for
@@ -133,6 +167,14 @@ official example (they are 2-app pairs). Notes for anyone pushing further:
   9-way mesh (per-app cliques); the platform-memoized store is the
   deterministic pattern here. Framework singletons (`vue`, `react`,
   `@angular/core`, …) negotiate fine and remain shared.
+- **Prod builds need absolute asset URLs** — vite's default `base: "/"`
+  makes every host resolve the other apps' chunks against its own origin
+  (404s), and every card then silently mounts the *host's own* widget:
+  the page looks alive, the shared globals still sync, but attribution
+  and identity silently lie. Each app's vite config therefore defaults
+  its build `base` to its own registry origin (`command === "build"`
+  only — dev is untouched); real deployments override with
+  `MF_BUILD_ORIGIN=<origin>`.
 
 ## References
 

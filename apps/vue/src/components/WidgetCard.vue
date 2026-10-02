@@ -12,6 +12,7 @@ const meta = FRAMEWORKS[props.app];
 
 const status = ref<"loading" | "ready" | "error">("loading");
 const errorMessage = ref<string>("");
+const loadMs = ref<number | null>(null);
 const container = ref<HTMLElement | null>(null);
 const unmount = shallowRef<WidgetUnmount | null>(null);
 let loadId = 0;
@@ -29,6 +30,7 @@ async function mountWidget(): Promise<void> {
   errorMessage.value = "";
 
   try {
+    const t0 = performance.now();
     const widget = await loadWidget(props.app);
     if (id !== loadId || !container.value) return;
 
@@ -43,6 +45,7 @@ async function mountWidget(): Promise<void> {
     } else {
       unmount.value = result;
     }
+    loadMs.value = Math.round(performance.now() - t0);
     status.value = "ready";
   } catch (error) {
     if (id !== loadId) return;
@@ -100,6 +103,9 @@ onUnmounted(() => {
       >
       <span class="ml-auto flex items-center gap-2">
         <span class="font-mono text-[11px] text-muted">:{{ cfg.port }}</span>
+        <span v-if="loadMs !== null" class="font-mono text-[10px] text-muted" data-mf-loadtime>
+          {{ loadMs }} ms
+        </span>
         <span
           class="h-1.5 w-1.5 rounded-full"
           :class="{

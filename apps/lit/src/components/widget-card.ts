@@ -15,11 +15,13 @@ export class MfWidgetCard extends LitElement {
     app: { type: String },
     status: { type: String, state: true },
     errorMessage: { type: String, state: true },
+    loadMs: { type: Number, state: true },
   };
 
   app: AppId = "vue";
   private status: "loading" | "ready" | "error" = "loading";
   private errorMessage = "";
+  private loadMs: number | null = null;
 
   private container: HTMLElement | null = null;
   private unmount: WidgetUnmount | null = null;
@@ -55,6 +57,7 @@ export class MfWidgetCard extends LitElement {
 
     const cfg = APPS[this.app];
     try {
+      const t0 = performance.now();
       const widget = await loadWidget(this.app);
       if (currentLoad !== this.loadId || !this.container) return;
 
@@ -69,6 +72,7 @@ export class MfWidgetCard extends LitElement {
       } else {
         this.unmount = result;
       }
+      this.loadMs = Math.round(performance.now() - t0);
       this.status = "ready";
     } catch (error) {
       if (currentLoad !== this.loadId) return;
@@ -124,6 +128,11 @@ export class MfWidgetCard extends LitElement {
           >
           <span class="ml-auto flex items-center gap-2">
             <span class="font-mono text-[11px] text-muted">:${cfg.port}</span>
+            ${this.loadMs !== null
+              ? html`<span class="font-mono text-[10px] text-muted" data-mf-loadtime
+                  >${this.loadMs} ms</span
+                >`
+              : nothing}
             <span
               class="h-1.5 w-1.5 rounded-full ${this.status === "loading"
                 ? "animate-pulse bg-amber-400"

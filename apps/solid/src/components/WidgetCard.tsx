@@ -14,6 +14,7 @@ export function WidgetCard(props: Props) {
 
   const [status, setStatus] = createSignal<"loading" | "ready" | "error">("loading");
   const [errorMessage, setErrorMessage] = createSignal("");
+  const [loadMs, setLoadMs] = createSignal<number | null>(null);
 
   let container: HTMLDivElement | undefined;
   let unmount: WidgetUnmount | null = null;
@@ -32,6 +33,7 @@ export function WidgetCard(props: Props) {
     setErrorMessage("");
 
     try {
+      const t0 = performance.now();
       const widget = await loadWidget(props.app);
       if (currentLoad !== loadId || !container) return;
 
@@ -46,6 +48,7 @@ export function WidgetCard(props: Props) {
       } else {
         unmount = result;
       }
+      setLoadMs(Math.round(performance.now() - t0));
       setStatus("ready");
     } catch (error) {
       if (currentLoad !== loadId) return;
@@ -102,6 +105,11 @@ export function WidgetCard(props: Props) {
         </span>
         <span class="ml-auto flex items-center gap-2">
           <span class="font-mono text-[11px] text-muted">:{cfg.port}</span>
+          <Show when={loadMs() !== null}>
+            <span class="font-mono text-[10px] text-muted" data-mf-loadtime>
+              {loadMs()} ms
+            </span>
+          </Show>
           <span
             class="h-1.5 w-1.5 rounded-full"
             classList={{

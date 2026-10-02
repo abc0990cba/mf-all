@@ -12,6 +12,7 @@
 
   let status: "loading" | "ready" | "error" = $state("loading");
   let errorMessage = $state("");
+  let loadMs: number | null = $state(null);
   let container: HTMLElement | undefined = $state();
   let unmount: WidgetUnmount | null = null;
   let loadId = 0;
@@ -29,6 +30,7 @@
     errorMessage = "";
 
     try {
+      const t0 = performance.now();
       const widget = await loadWidget(id);
       if (currentLoad !== loadId || !container) return;
 
@@ -43,6 +45,7 @@
       } else {
         unmount = result;
       }
+      loadMs = Math.round(performance.now() - t0);
       status = "ready";
     } catch (error) {
       if (currentLoad !== loadId) return;
@@ -101,6 +104,9 @@
     >
     <span class="ml-auto flex items-center gap-2">
       <span class="font-mono text-[11px] text-muted">:{cfg.port}</span>
+      {#if loadMs !== null}
+        <span class="font-mono text-[10px] text-muted" data-mf-loadtime>{loadMs} ms</span>
+      {/if}
       <span
         class="h-1.5 w-1.5 rounded-full {status === 'loading'
           ? 'animate-pulse bg-amber-400'

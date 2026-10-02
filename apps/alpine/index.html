@@ -112,6 +112,12 @@
                   <span class="ml-auto flex items-center gap-2">
                     <span class="font-mono text-[11px] text-muted" x-text="':' + apps[id].port"></span>
                     <span
+                      class="font-mono text-[10px] text-muted"
+                      data-mf-loadtime
+                      x-show="state[id].loadMs !== null"
+                      x-text="state[id].loadMs + ' ms'"
+                    ></span>
+                    <span
                       class="h-1.5 w-1.5 rounded-full"
                       :class="statusDot(id)"
                     ></span>

@@ -36,3 +36,24 @@ export function emitActivity(app: string, message: string): void {
     }),
   );
 }
+
+/**
+ * Widget-to-widget ping — a broadcast with sender identity that every other
+ * widget on the page receives directly (no shared store involved). Same
+ * loose-coupling pattern as the activity feed: DOM CustomEvents only.
+ */
+export const PING_EVENT = "mf:ping";
+
+export interface PingDetail {
+  /** AppId of the pinging widget. */
+  app: string;
+  at: number;
+}
+
+export function emitPing(app: string): void {
+  window.dispatchEvent(
+    new CustomEvent<PingDetail>(PING_EVENT, {
+      detail: { app, at: Date.now() },
+    }),
+  );
+}

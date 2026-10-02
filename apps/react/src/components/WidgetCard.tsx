@@ -19,6 +19,7 @@ export function WidgetCard({ app }: Props) {
 
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [errorMessage, setErrorMessage] = useState("");
+  const [loadMs, setLoadMs] = useState<number | null>(null);
 
   const mountWidget = useCallback(async () => {
     loadIdRef.current += 1;
@@ -33,6 +34,7 @@ export function WidgetCard({ app }: Props) {
     setErrorMessage("");
 
     try {
+      const t0 = performance.now();
       const widget = await loadWidget(app);
       if (id !== loadIdRef.current || !containerRef.current) return;
 
@@ -47,6 +49,7 @@ export function WidgetCard({ app }: Props) {
       } else {
         unmountRef.current = result;
       }
+      setLoadMs(Math.round(performance.now() - t0));
       setStatus("ready");
       settled.v = true;
     } catch (error) {
@@ -108,6 +111,11 @@ export function WidgetCard({ app }: Props) {
         </span>
         <span className="ml-auto flex items-center gap-2">
           <span className="font-mono text-[11px] text-muted">:{cfg.port}</span>
+          {loadMs !== null && (
+            <span className="font-mono text-[10px] text-muted" data-mf-loadtime>
+              {loadMs} ms
+            </span>
+          )}
           <span
             className={`h-1.5 w-1.5 rounded-full ${
               status === "loading"
